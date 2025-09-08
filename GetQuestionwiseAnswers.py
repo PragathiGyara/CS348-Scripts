@@ -29,7 +29,7 @@ question_boundaries_page2 = {
 
 pdf_files = [f for f in os.listdir(input_folder) if f.lower().endswith('.pdf')]
 
-
+count =0
 for pdf_file in pdf_files:
     pdf_path =os.path.join(input_folder,pdf_file)
     pages = convert_from_path(pdf_path,dpi = 300)
@@ -55,7 +55,7 @@ for pdf_file in pdf_files:
         # cv2.imwrite(os.path.join(output_folder, f"{os.path.splitext(pdf_file)[0]}_page_with_box.png"), img_with_box)
         
         question_crop = img_cv_scaled[y:y+h, x:x+w]
-        cv2.imwrite(os.path.join(output_folder, f"{os.path.splitext(pdf_file)[0]}_Q{q_num}.png"), question_crop)
+        cv2.imwrite(os.path.join(output_folder, f"{os.path.splitext(pdf_file)[0]}_{q_num}.png"), question_crop)
         print("Saved question ", q_num)
 
     scale = 1
@@ -70,7 +70,10 @@ for pdf_file in pdf_files:
         # cv2.imwrite(os.path.join(output_folder, f"{os.path.splitext(pdf_file)[0]}_page_with_box.png"), img_with_box)
         
         question_crop = img_cv_scaled_2[y:y+h, x:x+w]
-        cv2.imwrite(os.path.join(output_folder, f"{os.path.splitext(pdf_file)[0]}_Q{q_num}.png"), question_crop)
+        cv2.imwrite(os.path.join(output_folder, f"{os.path.splitext(pdf_file)[0]}_{q_num}.png"), question_crop)
         print("Saved question ", q_num)
+
+    print("Count ", count)
+    count = count + 1
 
 

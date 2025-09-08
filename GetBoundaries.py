@@ -1,3 +1,7 @@
+#Select top-left boundary and bottom-right boundary for the area you want
+# x, y, w and h are given
+# Can be used getting boundary of roll number and each question
+
 from pdf2image import convert_from_path
 import cv2
 import os
