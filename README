@@ -1,0 +1,17 @@
+Step 1: Rename PDF name with roll number
+	1. Run GetBoundaries.py
+        2. Select top left and bottom right of the roll number
+        3. Copy the output (coordinates) and update it in ExtractRollNumberTROCR.py
+        4. Adjust input folder and output folder paths in ExtractRollNumberTROCR.py
+        5. Run ExtractRollNumberTROCR.py
+        6. Make sure the pdf names are right.
+Step 2: Extract Question wise images
+	1. Run GetBoundaries.py
+	2. Note down the boundary coordinates for each question and update it in GetQuestionWiseAnswers.py
+	3. Adjust input folder and output folder paths in GetQuestionWiseAnswers.py
+	4. Run GetQuestionWiseAnswers.py
+Step 3: Generate CSV
+	1. Adjust input folder and output folder paths in GenerateCSV.py
+	2. Run GenerateCSV.py
+	
+
