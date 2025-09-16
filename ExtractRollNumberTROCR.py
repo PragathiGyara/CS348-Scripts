@@ -6,7 +6,33 @@ import pytesseract
 import re
 import easyocr
 from pdf2image import convert_from_path
+import warnings
 
+warnings.filterwarnings("ignore", message=".*pin_memory.*")
+
+misses = {
+    "I": ["1", "7"],   
+    "l": ["1"],        
+    "O": ["0"],
+    "o": ["0"],
+    ")": ["0"],
+    "S": ["5"],
+    "s": ["5"],
+    "B": ["8"],        
+    "Z": ["2"]
+}
+
+def additional_constraints(final_roll):
+    roll = list(final_roll)
+    if roll[3] == "8" or roll[3] == "6" or roll[3] == "3":
+        roll[3] = "0"
+    if roll[4] == "0":
+        roll[3] = "1"
+    if roll[3] == "0":
+        roll[4] = "9"
+    if roll [3] == "1":
+        roll[4] = "0"
+    return "".join(roll)
 
 
 def refine_roll(ocr_text):
@@ -43,9 +69,12 @@ def refine_roll(ocr_text):
     return ''.join(final_roll)
 
 def refine_characterwise(tr_text, image_path):
+
+    allowed_chars_num = set("0123456789")
     # Remove any "ROLL NUMBER:" or similar prefix
     tr_text = tr_text.upper().replace("^ROLL NUMBER:", "").replace("ROLL NUMBER:", "").replace("ROLLNUMBER:","").replace("^ROLLNUMBER:","").strip()
-    print("tr_text: ", tr_text)
+    tr_text = tr_text.replace(":", "")
+    print("tr_text: ", tr_text, "Length: ", len(tr_text))
 
     scale = 1
     img_cv = cv2.imread(temp_image_path)
@@ -91,7 +120,7 @@ def refine_characterwise(tr_text, image_path):
         elif idx == 2:
             final_roll.append('B' if char in ['B','R','8'] else 'B')
         else:
-            if char in allowed_chars:
+            if char in allowed_chars_num:
                 final_roll.append(char)
             else:
                 # candidates = []
@@ -100,11 +129,22 @@ def refine_characterwise(tr_text, image_path):
                 # if len(text_easy) > idx:
                 #     candidates.append(text_easy[idx])
                 # picked = next((c for c in candidates if c in allowed_chars), '_')
-                print("Char Tess: ", text_tess[idx], "Char easy: ", text_easy[idx])
-                if text_tess[idx] != text_easy[idx]:
-                    final_roll.append('_')
+                if char in misses:
+                    candidates = misses[char]
+                    picked = None
+                    if idx < len(text_easy) and text_tess[idx] in candidates:
+                        picked = text_easy[idx]
+                    elif idx < len(text_tess) and text_easy[idx] in candidates:
+                        picked = text_tess[idx]
+                    else:
+                        picked = candidates[0] 
+                    final_roll.append(picked)
                 else:
-                    final_roll.append(text_tess[idx])
+                    print("Char Tess: ", text_tess[idx], "Char easy: ", text_easy[idx])
+                    if text_tess[idx] != text_easy[idx]:
+                        final_roll.append('_')
+                    else:
+                        final_roll.append(text_tess[idx])
         print("final roll: ", final_roll)
     return ''.join(final_roll)
 
@@ -113,14 +153,15 @@ def refine_characterwise(tr_text, image_path):
 processor = TrOCRProcessor.from_pretrained("microsoft/trocr-base-printed")
 model = VisionEncoderDecoderModel.from_pretrained("microsoft/trocr-base-printed")
 
-input_folder = "quiz1"
+input_folder = "quiz2"
 temp_folder = "temp_images"
-output_folder = "quiz1_renamed_Final"
+output_folder = "quiz2_renamed_Final"
 
 os.makedirs(temp_folder, exist_ok=True)
 os.makedirs(output_folder,exist_ok = True)
 
-x, y, w, h = 1065, 560, 563, 123 # Coordinates for roll number
+# x, y, w, h = 1065, 560, 563, 123 # Coordinates for roll number quiz 1
+x, y, w, h = 1290, 575, 335, 105 # Coorindats for roll number quiz 2
 
 pdf_files = [f for f in os.listdir(input_folder) if f.lower().endswith('.pdf')]
 
@@ -149,9 +190,10 @@ for pdf_file in pdf_files:
     generated_ids = model.generate(pixel_values)
     generated_text = processor.batch_decode(generated_ids, skip_special_tokens=True)[0].replace(" ","")
 
-    print("Extracted Text:", generated_text)
+    # print("TROCR:", generated_text, "Length: ", len(generated_text))
 
     final_roll = refine_characterwise (generated_text, temp_image_path)
+    final_roll = additional_constraints (final_roll)
 
     new_pdf_name = f"{final_roll}.pdf"
     new_pdf_path = os.path.join(output_folder, new_pdf_name)
@@ -163,6 +205,7 @@ for pdf_file in pdf_files:
         counter += 1
 
     shutil.copy(pdf_path, new_pdf_path)
+    print("File Name: ", new_pdf_name)
     print("Pdf ", count, "copied")
     count = count + 1
 
