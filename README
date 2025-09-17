@@ -1,17 +1,73 @@
-Step 1: Rename PDF name with roll number
+Create a quiz
+	1. Go to Home -> Course Id -> Quizzes
+
+	2. Click on add quiz and save
+
+	3. Go to Quizzes -> NewQuiz -> Questions
+
+	4. Chose edit option to add questions and subquestions 
+	(Chose Question Group to add subquestions. Chose Image Answer if you want to upload an image as an answer)
+
+	5. Go to NewQuiz -> Run Quiz 
+
+	6. Publish the quiz
+
+	7. Go to NewQuiz -> Submissions 
+	(Refer Manaual Submission Help)
+
+
+How to generate the zip folder: 
+
+Step 1: Rename PDF with roll number (Skip if pdfs are already named as per the roll number)
+
 	1. Run GetBoundaries.py
-        2. Select top left and bottom right of the roll number
-        3. Copy the output (coordinates) and update it in ExtractRollNumberTROCR.py
-        4. Adjust input folder and output folder paths in ExtractRollNumberTROCR.py
-        5. Run ExtractRollNumberTROCR.py
-        6. Make sure the pdf names are right.
+	(GetBoundaries.py: input -> click on top-left and bottom-right of the rectangle box you want. Output: boundaries of the box in the format: x,y,w,h where (x,y) are coordinates of top-left)
+
+    2. Select top left and bottom right of the roll number which student has written, to get x,y,w,h coordinates of the roll number
+
+    3. Copy the output (coordinates) and update it in ExtractRollNumberTROCR.py (x,y,w,h)
+
+    4. Adjust input folder (where all the scanned pdfs are present) and output folder (where you want to store the pdfs which are renamed as per roll number) paths in ExtractRollNumberTROCR.py
+
+    5. Run ExtractRollNumberTROCR.py
+
+    6. Verify if all the pdfs are named right.
+
+
 Step 2: Extract Question wise images
-	1. Run GetBoundaries.py
-	2. Note down the boundary coordinates for each question and update it in GetQuestionWiseAnswers.py
-	3. Adjust input folder and output folder paths in GetQuestionWiseAnswers.py
-	4. Run GetQuestionWiseAnswers.py
-Step 3: Generate CSV
-	1. Adjust input folder and output folder paths in GenerateCSV.py
-	2. Run GenerateCSV.py
+	1. Run GetBoundaries.py 
+	(GetBoundaries.py: input -> click on top-left and bottom-right of the rectangle box you want. Output: boundaries of the box in the format: x,y,w,h where (x,y) are coordinates of top-left)
+
+	2. Note down the boundary coordinates for each question and update it in GetQuestionWiseAnswers.py 
+	Follow this example to store boundaries for each question: 
+		Example : 
+			question_boundaries = {
+				1: {   # Page 1
+					1: {   # Question 1 with subquestions
+						1: (0, 925, 2480, 1140),
+						2: (0, 1960, 2480, 490),
+						3: (0, 2370, 2480, 1106),
+					},
+					2: (0, 120, 2480, 800)  # Question 2 without subquestions
+				},
+				2: {   # Page 2
+					3: (0, 0, 2480, 3506)
+				}
+			}
+
+	3. Adjust question to page mapping.
+	Example: 
+
+
+	4. Adjust input folder (where pdfs are stored as per roll number) and output folder (where you want to store the images required for manual grading) paths in GetImageAndCSV.py
+
+	5. Run GetImageAndCSV.py
+	(Output: )
+
+	6. Zip the folder with csv file inside it
+
+
+
+
 	
 
