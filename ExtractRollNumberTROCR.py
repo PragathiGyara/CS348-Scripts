@@ -153,22 +153,43 @@ def refine_characterwise(tr_text, image_path):
 processor = TrOCRProcessor.from_pretrained("microsoft/trocr-base-printed")
 model = VisionEncoderDecoderModel.from_pretrained("microsoft/trocr-base-printed")
 
-input_folder = "quiz2"
-temp_folder = "temp_images"
-output_folder = "quiz2_renamed_Final"
+
+input_folder = input("Enter the path to folder where all answer scripts are present: ").strip()
+base_dir = os.path.dirname(input_folder)
+base_name = os.path.basename(input_folder.rstrip("/"))
+
+temp_folder = os.path.join(base_dir, base_name + "_temp")
+output_folder = os.path.join(base_dir, base_name + "_renamed")
+
+
+print("Renamed pdfs can be found in : " + output_folder)
 
 os.makedirs(temp_folder, exist_ok=True)
-os.makedirs(output_folder,exist_ok = True)
+os.makedirs(output_folder, exist_ok=True)
+
 
 # x, y, w, h = 1065, 560, 563, 123 # Coordinates for roll number quiz 1
-x, y, w, h = 1290, 575, 335, 105 # Coorindats for roll number quiz 2
+# x, y, w, h = 1290, 575, 335, 105 # Coorindats for roll number quiz 2
+# x, y, w, h = 1290, 410, 335, 145 #Mid Sem
+
+try:
+    x = int(input("Enter x: ").strip())
+    y = int(input("Enter y: ").strip())
+    w = int(input("Enter width (w): ").strip())
+    h = int(input("Enter height (h): ").strip())
+except ValueError:
+    print("Invalid input. Please enter integer values.")
+    exit(1)
+
+print("\nCoordinates set as:")
+print(f'{{"x": {x}, "y": {y}, "w": {w}, "h": {h}}}')
 
 pdf_files = [f for f in os.listdir(input_folder) if f.lower().endswith('.pdf')]
 
 reader = easyocr.Reader(['en'])
 allowed_chars = set("0123456789B")
 
-count =0
+count =1
 for pdf_file in pdf_files:
     pdf_path = os.path.join(input_folder, pdf_file)
     pages = convert_from_path(pdf_path,dpi = 300)
@@ -208,4 +229,6 @@ for pdf_file in pdf_files:
     print("File Name: ", new_pdf_name)
     print("Pdf ", count, "copied")
     count = count + 1
+
+print("Renamed pdfs can be found in : " + output_folder)
 
