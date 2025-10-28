@@ -1,0 +1,15 @@
+# Core dependencies
+opencv-python
+pdf2image
+pillow
+pytesseract
+easyocr
+torch
+torchvision
+transformers
+tqdm
+
+# Optional
+pandas
+numpy
+
