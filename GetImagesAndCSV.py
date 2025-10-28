@@ -4,9 +4,11 @@ from pdf2image import convert_from_path
 import shutil
 import csv
 
-input_folder = "../quiz2_pdfs"
-output_folder = "../quiz2_images"
+input_folder = input("Enter the input folder path containing PDFs (according to Roll Number): ").strip()
+output_folder = os.path.join(os.path.dirname(input_folder), "images")
 os.makedirs(output_folder,exist_ok = True)
+
+print("Output folder : " + output_folder)
 
 output_csv = os.path.join(output_folder,"submissions.csv")
 
@@ -27,32 +29,113 @@ output_csv = os.path.join(output_folder,"submissions.csv")
 # }
 
 
-question_boundaries = {
-    1: { 
-        1: {  
-            1: (0, 925, 2480, 1140),
-            2: (0, 1960, 2480, 490),
-            3: (0, 2370, 2480, 1106)
-        }
-    },
-    2: {  
-        2: (0, 0, 2480, 3506)
-    }
-}
+# Quiz 2
+# question_boundaries = {
+#     1: { 
+#         1: {  
+#             1: (0, 925, 2480, 1140),
+#             2: (0, 1960, 2480, 490),
+#             3: (0, 2370, 2480, 1106)
+#         }
+#     },
+#     2: {  
+#         2: (0, 0, 2480, 3506)
+#     }
+# }
+# question_to_page = {
+#     (1, ""): 1, #Fallback
+#     (1, "1"): 1, 
+#     (1, "2"): 1,   
+#     (1, "3"): 1,    
+#     (2, ""): 2
+# }
 
-question_to_page = {
-    (1, ""): 1, #Fallback
-    (1, "1"): 1, 
-    (1, "2"): 1,   
-    (1, "3"): 1,    
-    (2, ""): 2
-}
+#MidSem
+# question_boundaries = {
+#     1: { 
+#         1: (0, 945, 2480, 820),
+#         2: (0, 1670, 2480, 395),
+#         3: (0, 1995, 2480, 1526)
+#     },
+#     2: {  
+#         4: (0, 535, 2480, 585),
+#         5: (0, 1045, 2480, 920),
+#         6: (0, 1860, 2480, 1646)
+#     },
+#     3: {
+#         7: (0, 515, 2480, 1340),
+#         8: {
+#             1: (0, 1780, 2480, 1035)
+#         }
+#     },
+#     4: {
+#         8: {
+#             2: (0, 515, 2480, 745)
+#         },
+#         9: (0, 1160, 2480, 2346)
+#     }
+# }
+
+# question_to_page = {
+#     (1, ""): 1,
+#     (2, ""): 1, 
+#     (3, ""): 1,   
+#     (4, ""): 2,    
+#     (5, ""): 2,
+#     (6, ""): 2,
+#     (7, ""): 3,
+#     (8, "1"): 3,
+#     (8, "2"): 4,
+#     (9, ""): 4
+# }
 
 rows = []
 page_usage_count = {}
 
 
-def getCSV():
+def get_boundaries_from_user():
+    question_boundaries={}
+    question_to_page={}
+    num_pages = int(input("Enter number of pages: ").strip())
+    current_question_number = 1
+
+    for page in range(1,num_pages+1):
+        print(f"\n--- Page {page} ---")
+        num_questions = int(input(f"Enter number of questions on page {page}: ").strip())
+        question_boundaries[page] = {}
+
+        for _ in range(1, num_questions + 1):
+            q = int(input("\n Enter question number: "))
+            print(f"\nQuestion {q}:")
+            has_sub = input("Does this question have subquestions? (y/n): ").strip().lower() == 'y'
+
+            if has_sub:
+                question_boundaries[page][q] = {}
+                num_sub = int(input("Enter number of subquestions: ").strip())
+                for s in range(1, num_sub + 1):
+                    print(f"Subquestion {s}:")
+                    x = int(input("  Enter x: ").strip())
+                    y = int(input("  Enter y: ").strip())
+                    w = int(input("  Enter width (w): ").strip())
+                    h = int(input("  Enter height (h): ").strip())
+                    question_boundaries[page][q][s] = (x, y, w, h)
+                    question_to_page[(q, str(s))] = page
+
+
+            else:
+                x = int(input("  Enter x: ").strip())
+                y = int(input("  Enter y: ").strip())
+                w = int(input("  Enter width (w): ").strip())
+                h = int(input("  Enter height (h): ").strip())
+                question_boundaries[page][q] = (x, y, w, h)
+                question_to_page[(q, "")] = page
+            current_question_number += 1
+
+    print("\nBoundaries collected successfully.")
+    return question_boundaries, question_to_page
+
+
+def getCSV(question_to_page):
     for filename in sorted(os.listdir(output_folder)):
 
         if "_page" in filename:
@@ -116,7 +199,7 @@ def getCSV():
     print(f"CSV file saved as {output_csv}")
 
 
-def getImages():
+def getImages(question_boundaries):
     pdf_files = sorted(f for f in os.listdir(input_folder) if f.lower().endswith('.pdf'))
 
     for count, pdf_file in enumerate(pdf_files):
@@ -156,8 +239,16 @@ def getImages():
         print("Processed file count:", count + 1)
 
 def main():
-    getImages()
-    getCSV()
+    question_boundaries, question_to_page = get_boundaries_from_user()
+
+    print("\n Question Boundaries: ")
+    print(question_boundaries)
+
+    print("\n\n Question to page mapping: ")
+    print(question_to_page)
+
+    getImages(question_boundaries)
+    getCSV(question_to_page)
 
 if __name__ == "__main__":
     main()
