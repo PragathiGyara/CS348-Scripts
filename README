@@ -1,4 +1,58 @@
-Create a quiz
+Renamming scanned answer scripts using roll numbers, extracting question-wise images, generating submission CSV and zip folder to upload to SAFE.
+
+
+Step 1: Get Boundaries
+
+	Script: GetBoundaries.py
+
+	- Input: Path to any one answer sheet (PDF).
+
+	- Select top-left and bottom-right points of the region (e.g., roll number box or Q&A area).
+
+	- Output (on terminal): {"x": X, "y": Y, "w": W, "h": H}
+
+		where (x, y) = top-left coordinates, and (w, h) = width & height.
+
+	- Note these values — used in later steps.
+
+Step 2: Extract Roll Numbers
+
+	Script: ExtractRollNumberTROCR.py
+
+	- Input: Folder containing all scanned (but not renamed yet) answer scripts.
+
+	- Also Provide the x, y, w, h values from Step 1 (i.e., coordinates of roll number box).
+
+	- The script renames PDFs using extracted roll numbers and saves them to a new folder (path shown in terminal).
+
+	- Verify renamed files — check if roll numbers match correctly for all the answer scripts.
+
+Step 3: Extract Question-Wise Images & CSV
+
+	Script: GetImageAndCSV.py
+
+	- Input: Folder of renamed PDFs (from Step 2).
+
+		Also Enter:
+
+		- Number of pages.
+
+		- Number of questions per page.
+
+		- Subquestion info.
+
+		- Boundaries for each question (get via GetBoundaries.py — this time select question/answer boxes). Add small padding to the boundaries to include extra writing area.
+
+	- The script generates one consolidated folder containing:
+
+		Cropped images (each question, for every student).
+
+		submission.csv for grading.
+
+Step 4: Upload the zip (output folder of Step 3) to SAFE for grading.
+
+
+Create a quiz on SAFE
 	1. Go to Home -> Course Id -> Quizzes
 
 	2. Click on add quiz and save
@@ -15,56 +69,6 @@ Create a quiz
 	7. Go to NewQuiz -> Submissions 
 	(Refer Manaual Submission Help)
 
-
-How to generate the zip folder: 
-
-Step 1: Rename PDF with roll number (Skip if pdfs are already named as per the roll number)
-
-	1. Run GetBoundaries.py
-	(GetBoundaries.py: input -> click on top-left and bottom-right of the rectangle box you want. Output: boundaries of the box in the format: x,y,w,h where (x,y) are coordinates of top-left)
-
-    2. Select top left and bottom right of the roll number which student has written, to get x,y,w,h coordinates of the roll number
-
-    3. Copy the output (coordinates) and update it in ExtractRollNumberTROCR.py (x,y,w,h)
-
-    4. Adjust input folder (where all the scanned pdfs are present) and output folder (where you want to store the pdfs which are renamed as per roll number) paths in ExtractRollNumberTROCR.py
-
-    5. Run ExtractRollNumberTROCR.py
-
-    6. Verify if all the pdfs are named right.
-
-
-Step 2: Extract Question wise images
-	1. Run GetBoundaries.py 
-	(GetBoundaries.py: input -> click on top-left and bottom-right of the rectangle box you want. Output: boundaries of the box in the format: x,y,w,h where (x,y) are coordinates of top-left)
-
-	2. Note down the boundary coordinates for each question and update it in GetQuestionWiseAnswers.py 
-	Follow this example to store boundaries for each question: 
-		Example : 
-			question_boundaries = {
-				1: {   # Page 1
-					1: {   # Question 1 with subquestions
-						1: (0, 925, 2480, 1140),
-						2: (0, 1960, 2480, 490),
-						3: (0, 2370, 2480, 1106),
-					},
-					2: (0, 120, 2480, 800)  # Question 2 without subquestions
-				},
-				2: {   # Page 2
-					3: (0, 0, 2480, 3506)
-				}
-			}
-
-	3. Adjust question to page mapping.
-	Example: 
-
-
-	4. Adjust input folder (where pdfs are stored as per roll number) and output folder (where you want to store the images required for manual grading) paths in GetImageAndCSV.py
-
-	5. Run GetImageAndCSV.py
-	(Output: )
-
-	6. Zip the folder with csv file inside it
 
 
 
